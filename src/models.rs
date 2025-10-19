@@ -14,7 +14,11 @@ pub struct Competition {
     pub source: String,
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub description: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", default, deserialize_with = "deserialize_optional_datetime")]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "deserialize_optional_datetime"
+    )]
     pub signup_deadline: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub location: Option<String>,
@@ -29,7 +33,7 @@ pub struct Competition {
 // Helper module for serializing DateTime as RFC3339 string
 mod bson_datetime_as_rfc3339_string {
     use chrono::{DateTime, Utc};
-    
+
     use serde::{self, Deserialize, Deserializer, Serializer};
 
     pub fn serialize<S>(date: &DateTime<Utc>, serializer: S) -> Result<S::Ok, S::Error>
@@ -51,7 +55,7 @@ mod bson_datetime_as_rfc3339_string {
 // Helper module for serializing Option<DateTime> as RFC3339 string
 mod option_bson_datetime_as_rfc3339_string {
     use chrono::{DateTime, Utc};
-    
+
     use serde::{self, Deserialize, Deserializer, Serializer};
 
     pub fn serialize<S>(date: &Option<DateTime<Utc>>, serializer: S) -> Result<S::Ok, S::Error>
@@ -70,7 +74,8 @@ mod option_bson_datetime_as_rfc3339_string {
     {
         let opt = Option::<String>::deserialize(deserializer).map_err(serde::de::Error::custom)?;
         match opt {
-            Some(s) => s.parse::<DateTime<Utc>>()
+            Some(s) => s
+                .parse::<DateTime<Utc>>()
                 .map(Some)
                 .map_err(serde::de::Error::custom),
             None => Ok(None),
@@ -85,7 +90,8 @@ where
 {
     let opt = Option::<String>::deserialize(deserializer).map_err(serde::de::Error::custom)?;
     match opt {
-        Some(s) => s.parse::<DateTime<Utc>>()
+        Some(s) => s
+            .parse::<DateTime<Utc>>()
             .map(Some)
             .map_err(serde::de::Error::custom),
         None => Ok(None),

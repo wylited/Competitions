@@ -8,7 +8,6 @@ use axum::{
 use futures_util::TryStreamExt;
 use mongodb::{Collection, bson::doc};
 use scraper::{Html, Selector};
-use serde_json;
 use std::collections::HashMap;
 
 use crate::{models::Competition, AppState, ApiResponse};
@@ -66,7 +65,7 @@ impl Scraper for HkuScraper {
             // Create competition with HKU source
             let competition = Competition {
                 id: None, // Will be set by MongoDB
-                name: format!("{} [HKU]", title),
+                name: format!("{title} [HKU]"),
                 date: chrono::Utc::now(), // Default to current time, should be parsed from actual date if available
                 host: "HKU".to_string(), // Keep as HKU as requested
                 source: "HKU".to_string(),
@@ -153,7 +152,7 @@ impl Scraper for HkustScraper {
             // Create competition with HKUST source
             let competition = Competition {
                 id: None, // Will be set by MongoDB
-                name: format!("{} [UST]", title),
+                name: format!("{title} [UST]"),
                 date: chrono::Utc::now(), // Default to current time, should be parsed from actual date if available
                 host: "HKUST".to_string(), // Keep as HKUST as requested
                 source: "HKUST".to_string(),
@@ -265,7 +264,9 @@ fn clean_competition_name(name: &str) -> String {
     let cleaned = re.replace_all(name, "").trim().to_string();
     
     // Remove common university indicators and normalize spaces
-    let cleaned = cleaned.replace("HKU", "")
+    
+    
+    cleaned.replace("HKU", "")
         .replace("UST", "")
         .replace("HKUST", "")
         .replace("The", "")
@@ -322,12 +323,9 @@ fn clean_competition_name(name: &str) -> String {
         .replace("join", "")
         .replace("NOW", "")
         .replace("now", "")
-        .trim()
         .split_whitespace()
         .collect::<Vec<_>>()
-        .join(" ");
-    
-    cleaned
+        .join(" ")
 }
 
 /// Simple string similarity function using a basic algorithm
@@ -370,7 +368,7 @@ async fn update_existing_competition_source(
     
     for existing in existing_competitions {
         // Use the clean names for fuzzy matching to ignore source indicators like [HKU], [UST]
-        if fuzzy_match(&name, &existing.name) {
+        if fuzzy_match(name, &existing.name) {
             // Update the source field to include the new scraper
             let mut sources: Vec<&str> = existing.source.split(',').map(|s| s.trim()).collect();
             if !sources.contains(&scraper_name) {
@@ -420,7 +418,7 @@ impl Scraper for CtfTimeScraper {
         
         for event in events {
             // Extract relevant fields from the CTFTime API response
-            if let (Some(title), Some(start_time), Some(end_time), Some(url), Some(description)) = (
+            if let (Some(title), Some(start_time), Some(_end_time), Some(url), Some(description)) = (
                 event.get("title").and_then(|v| v.as_str()),
                 event.get("start").and_then(|v| v.as_str()),
                 event.get("finish").and_then(|v| v.as_str()),
@@ -435,7 +433,7 @@ impl Scraper for CtfTimeScraper {
                 // Create competition with CTFTime source
                 let competition = Competition {
                     id: None, // Will be set by MongoDB
-                    name: format!("{} [CTF]", title),
+                    name: format!("{title} [CTF]"),
                     date: start_date,
                     host: "CTFTime".to_string(),
                     source: "CTFTime".to_string(),
@@ -557,7 +555,7 @@ pub async fn run_all_scrapers(
     let competitions = match manager.run_all_scrapers(&state.db).await {
         Ok(comps) => comps,
         Err(e) => {
-            eprintln!("Error running all scrapers: {}", e);
+            eprintln!("Error running all scrapers: {e}");
             return Err(StatusCode::INTERNAL_SERVER_ERROR);
         }
     };
@@ -668,8 +666,8 @@ pub async fn run_specific_scraper(
     
     Ok(Json(ApiResponse {
         success: true,
-        data: Some(format!("Successfully scraped {} competitions from {}", competitions_count, name)),
-        message: Some(format!("Scraper '{}' ran successfully", name)),
+        data: Some(format!("Successfully scraped {competitions_count} competitions from {name}")),
+        message: Some(format!("Scraper '{name}' ran successfully")),
     }))
 }
 
