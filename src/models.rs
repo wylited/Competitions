@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use mongodb::bson::{oid::ObjectId, DateTime as BsonDateTime};
+use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
 
 // Competition data model
@@ -30,7 +30,7 @@ pub struct Competition {
 // Helper module for serializing DateTime as RFC3339 string
 mod bson_datetime_as_rfc3339_string {
     use chrono::{DateTime, Utc};
-    use mongodb::bson::DateTime as BsonDateTime;
+    
     use serde::{self, Deserialize, Deserializer, Serializer};
 
     pub fn serialize<S>(date: &DateTime<Utc>, serializer: S) -> Result<S::Ok, S::Error>
@@ -52,7 +52,7 @@ mod bson_datetime_as_rfc3339_string {
 // Helper module for serializing Option<DateTime> as RFC3339 string
 mod option_bson_datetime_as_rfc3339_string {
     use chrono::{DateTime, Utc};
-    use mongodb::bson::DateTime as BsonDateTime;
+    
     use serde::{self, Deserialize, Deserializer, Serializer};
 
     pub fn serialize<S>(date: &Option<DateTime<Utc>>, serializer: S) -> Result<S::Ok, S::Error>

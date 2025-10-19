@@ -1,48 +1,31 @@
 use axum::{
-    extract::{Path, State},
-    http::StatusCode,
     response::Json,
-    routing::{get, post},
+    routing::get,
     Router,
 };
-use async_trait::async_trait;
-use chrono::{DateTime, Utc};
-use futures_util::stream::TryStreamExt;
 use mongodb::{options::ClientOptions, Client, Database};
-use scraper::{Html, Selector};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::net::SocketAddr;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod models;
+mod competitions;
 
 // Application state to hold the database connection
 #[derive(Clone)]
-struct AppState {
+pub struct AppState {
     db: Database,
 }
 
 // Response for API endpoints
 #[derive(Serialize)]
-struct ApiResponse<T> {
+pub struct ApiResponse<T> {
     success: bool,
     data: Option<T>,
     message: Option<String>,
 }
 
-// Example handler using the Competition model
-async fn create_competition(
-    State(state): State<AppState>,
-    Json(competition): Json<models::Competition>,
-) -> Result<Json<ApiResponse<models::Competition>>, StatusCode> {
-    // In a real app, you would save to the database here
-    // For now, just return the competition as received
-    Ok(Json(ApiResponse {
-        success: true,
-        data: Some(competition),
-        message: Some("Competition created successfully".to_string()),
-    }))
-}
+
 
 async fn health_handler() -> Json<ApiResponse<String>> {
     Json(ApiResponse {
@@ -83,7 +66,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Router::new()
         .route("/", get(health_handler))
         .route("/health", get(health_handler))
-        .route("/competitions", post(create_competition))
+        .nest("/competitions", competitions::create_competition_router())
         .with_state(app_state);
 
     // Run the server
