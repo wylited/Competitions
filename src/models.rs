@@ -12,18 +12,17 @@ pub struct Competition {
     pub date: DateTime<Utc>,
     pub host: String,
     pub source: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", default)]
     pub description: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(with = "option_bson_datetime_as_rfc3339_string")]
+    #[serde(skip_serializing_if = "Option::is_none", default, deserialize_with = "deserialize_optional_datetime")]
     pub signup_deadline: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", default)]
     pub location: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", default)]
     pub registration_link: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", default)]
     pub max_participants: Option<i32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", default)]
     pub status: Option<String>, // e.g., "upcoming", "active", "completed", "cancelled"
 }
 
@@ -69,13 +68,27 @@ mod option_bson_datetime_as_rfc3339_string {
     where
         D: Deserializer<'de>,
     {
-        let opt = Option::<String>::deserialize(deserializer)?;
+        let opt = Option::<String>::deserialize(deserializer).map_err(serde::de::Error::custom)?;
         match opt {
             Some(s) => s.parse::<DateTime<Utc>>()
                 .map(Some)
                 .map_err(serde::de::Error::custom),
             None => Ok(None),
         }
+    }
+}
+
+// Function to deserialize optional DateTime
+fn deserialize_optional_datetime<'de, D>(deserializer: D) -> Result<Option<DateTime<Utc>>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let opt = Option::<String>::deserialize(deserializer).map_err(serde::de::Error::custom)?;
+    match opt {
+        Some(s) => s.parse::<DateTime<Utc>>()
+            .map(Some)
+            .map_err(serde::de::Error::custom),
+        None => Ok(None),
     }
 }
 
@@ -89,7 +102,7 @@ pub struct Participant {
     pub competition_id: ObjectId,
     #[serde(with = "bson_datetime_as_rfc3339_string")]
     pub registration_date: DateTime<Utc>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", default)]
     pub status: Option<String>, // e.g., "registered", "confirmed", "withdrawn"
 }
 
@@ -100,8 +113,8 @@ pub struct CompetitionResult {
     pub competition_id: ObjectId,
     pub participant_id: ObjectId,
     pub rank: i32,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", default)]
     pub score: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", default)]
     pub notes: Option<String>,
 }

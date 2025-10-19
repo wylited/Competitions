@@ -21,3 +21,4 @@ reqwest = { version = "0.11", features = ["blocking"] }
 scraper = "0.18"
 chrono = { version = "0.4", features = ["serde"] }
 async-trait = "0.1"
+regex = "1.0"

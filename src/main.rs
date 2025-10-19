@@ -10,6 +10,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod models;
 mod competitions;
+mod scrapers;
 
 // Application state to hold the database connection
 #[derive(Clone)]
@@ -67,6 +68,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/", get(health_handler))
         .route("/health", get(health_handler))
         .nest("/competitions", competitions::create_competition_router())
+        .nest("/scrapers", scrapers::create_scraper_router())
         .with_state(app_state);
 
     // Run the server
