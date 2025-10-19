@@ -141,7 +141,7 @@ pub async fn get_competitions(
     
     // Get total count using functional composition
     let total = collection
-        .count_documents(filter.clone(), None)
+        .count_documents(filter.clone())
         .await
         .map_err(|e| {
             tracing::error!("Error counting competitions: {}", e);
@@ -150,7 +150,8 @@ pub async fn get_competitions(
     
     // Get competitions using functional approach
     let cursor = collection
-        .find(filter, options)
+        .find(filter)
+        .with_options(options)
         .await
         .map_err(|e| {
             tracing::error!("Error finding competitions: {}", e);
@@ -188,7 +189,7 @@ pub async fn get_competition_by_id(
         })?;
     
     match collection
-        .find_one(doc! { "_id": object_id }, None)
+        .find_one(doc! { "_id": object_id })
         .await
         .map_err(|e| {
             tracing::error!("Error finding competition by ID: {}", e);
@@ -215,7 +216,7 @@ pub async fn create_competition(
     competition.id = None;
     
     match collection
-        .insert_one(competition.clone(), None)
+        .insert_one(competition.clone())
         .await
         .map_err(|e| {
             tracing::error!("Failed to insert competition: {}", e);
@@ -265,7 +266,6 @@ pub async fn update_competition(
         .update_one(
             doc! { "_id": object_id },
             doc! { "$set": update_doc },
-            None,
         )
         .await
         .map_err(|e| {
@@ -277,7 +277,7 @@ pub async fn update_competition(
         _ => {
             // Return the updated competition
             match collection
-                .find_one(doc! { "_id": object_id }, None)
+                .find_one(doc! { "_id": object_id })
                 .await
                 .map_err(|e| {
                     tracing::error!("Error finding updated competition: {}", e);
@@ -310,7 +310,7 @@ pub async fn delete_competition(
         })?;
     
     match collection
-        .delete_one(doc! { "_id": object_id }, None)
+        .delete_one(doc! { "_id": object_id })
         .await
         .map_err(|e| {
             tracing::error!("Error deleting competition: {}", e);

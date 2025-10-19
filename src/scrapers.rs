@@ -5,7 +5,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use futures_util::{StreamExt, TryStreamExt};
+use futures_util::TryStreamExt;
 use mongodb::{Collection, bson::doc};
 use scraper::{Html, Selector};
 use serde_json;
@@ -187,7 +187,7 @@ async fn is_duplicate_competition(db: &mongodb::Database, new_comp: &Competition
     let collection: Collection<Competition> = db.collection("competitions");
     
     // Get all existing competitions
-    let cursor = collection.find(doc! {}, None).await.unwrap();
+    let cursor = collection.find(doc! {}).await.unwrap();
     let existing_competitions: Vec<Competition> = cursor.try_collect().await.unwrap();
     
     // Simple fuzzy matching by checking if the name contains similar words
@@ -365,7 +365,7 @@ async fn update_existing_competition_source(
     let collection: Collection<Competition> = db.collection("competitions");
     
     // Find competitions with similar names using fuzzy matching
-    let cursor = collection.find(doc! {}, None).await.unwrap();
+    let cursor = collection.find(doc! {}).await.unwrap();
     let existing_competitions: Vec<Competition> = cursor.try_collect().await.unwrap();
     
     for existing in existing_competitions {
@@ -381,7 +381,6 @@ async fn update_existing_competition_source(
                     .update_one(
                         doc! { "_id": existing.id.unwrap() },
                         doc! { "$set": { "source": new_source } },
-                        None,
                     )
                     .await?;
             }
@@ -572,7 +571,6 @@ pub async fn run_all_scrapers(
         let existing = collection
             .find_one(
                 doc! { "name": &competition.name },
-                None,
             )
             .await
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
@@ -593,7 +591,6 @@ pub async fn run_all_scrapers(
                 .update_one(
                     doc! { "_id": existing_comp.id.unwrap() },
                     doc! { "$set": { "source": updated_source } },
-                    None,
                 )
                 .await
                 .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
@@ -601,7 +598,7 @@ pub async fn run_all_scrapers(
             // Insert new competition
             competition.id = None; // Let MongoDB generate the ID
             collection
-                .insert_one(competition, None)
+                .insert_one(competition)
                 .await
                 .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
         }
@@ -636,7 +633,6 @@ pub async fn run_specific_scraper(
         let existing = collection
             .find_one(
                 doc! { "name": &competition.name },
-                None,
             )
             .await
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
@@ -657,7 +653,6 @@ pub async fn run_specific_scraper(
                 .update_one(
                     doc! { "_id": existing_comp.id.unwrap() },
                     doc! { "$set": { "source": updated_source } },
-                    None,
                 )
                 .await
                 .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
@@ -665,7 +660,7 @@ pub async fn run_specific_scraper(
             // Insert new competition
             competition.id = None; // Let MongoDB generate the ID
             collection
-                .insert_one(competition, None)
+                .insert_one(competition)
                 .await
                 .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
         }

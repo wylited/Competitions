@@ -55,7 +55,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db = client.database("comp_db");
 
     // Test the connection
-    match client.list_database_names(None, None).await {
+    match client.list_database_names().await {
         Ok(dbs) => tracing::info!("Connected to MongoDB. Databases: {:?}", dbs),
         Err(e) => tracing::error!("Failed to connect to MongoDB: {}", e),
     }

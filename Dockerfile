@@ -3,6 +3,11 @@
 # Build stage
 FROM rust:1.88 as builder
 
+# Install additional build dependencies if needed
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Copy manifest files
@@ -19,12 +24,12 @@ RUN rm src/*.rs
 # Copy source code
 COPY src ./src
 
-# Build the application
+# Build the application with rustls features
 RUN touch src/main.rs  # Force rebuild
 RUN cargo build --release
 
 # Runtime stage
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 # Install certificates for HTTPS requests (rustls uses system certificates)
 RUN apt-get update && apt-get install -y \
