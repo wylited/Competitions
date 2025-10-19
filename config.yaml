@@ -1,0 +1,56 @@
+# Application Configuration
+
+# Server settings
+server:
+  host: "0.0.0.0"
+  port: 3000
+  cors:
+    enabled: true
+    origins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"
+      - "https://yourdomain.com"
+
+# Database settings
+database:
+  mongodb_uri: ${MONGODB_URI:-"mongodb://localhost:27017"}
+  database_name: "comp_db"
+  connection_timeout: 10000  # milliseconds
+
+# Scraper settings
+scraper:
+  # Timeout for individual scraper requests (milliseconds)
+  request_timeout: 30000
+  
+  # Maximum number of concurrent scrapers
+  max_concurrent: 3
+  
+  # SSL verification settings
+  ssl_verification:
+    enabled: false  # Set to true in production with proper certificates
+
+# API settings
+api:
+  # Default pagination limit
+  default_page_limit: 10
+  
+  # Maximum pagination limit
+  max_page_limit: 100
+  
+  # Rate limiting (requests per minute)
+  rate_limit:
+    enabled: false
+    requests_per_minute: 100
+
+# Logging settings
+logging:
+  level: ${RUST_LOG:-"debug"}
+  format: "json"  # "json" or "plain"
+
+# Fuzzy matching settings
+fuzzy_matching:
+  # Minimum similarity threshold for considering two competitions as duplicates
+  similarity_threshold: 0.75
+  
+  # Minimum word overlap for considering two competitions as duplicates
+  word_overlap_threshold: 0.5
