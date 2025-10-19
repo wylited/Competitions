@@ -28,9 +28,10 @@ impl Scraper for HkuScraper {
     async fn scrape(&self, db: &mongodb::Database) -> Result<Vec<Competition>, Box<dyn std::error::Error + Send + Sync>> {
         let url = "https://ug.hkubs.hku.hk/competition";
         
-        // Create a client that can handle SSL verification
+        // Create a client that can handle SSL verification with rustls
         let client = reqwest::Client::builder()
             .danger_accept_invalid_certs(true)
+            .use_rustls_tls()
             .build()?;
         
         // Fetch the page
@@ -102,9 +103,10 @@ impl Scraper for HkustScraper {
     async fn scrape(&self, db: &mongodb::Database) -> Result<Vec<Competition>, Box<dyn std::error::Error + Send + Sync>> {
         let url = "https://bmundergrad.hkust.edu.hk/announcement";
         
-        // Create a client that can handle SSL verification differently
+        // Create a client that can handle SSL verification with rustls
         let client = reqwest::Client::builder()
             .danger_accept_invalid_certs(true)  // Equivalent to verify=False in Python
+            .use_rustls_tls()
             .build()?;
         
         // Fetch the page
@@ -397,9 +399,10 @@ impl Scraper for CtfTimeScraper {
     async fn scrape(&self, db: &mongodb::Database) -> Result<Vec<Competition>, Box<dyn std::error::Error + Send + Sync>> {
         let url = "https://ctftime.org/api/v1/events/";
         
-        // Create a client that can handle SSL verification
+        // Create a client that can handle SSL verification with rustls
         let client = reqwest::Client::builder()
             .danger_accept_invalid_certs(true)
+            .use_rustls_tls()
             .build()?;
         
         // Fetch the page - get upcoming events (next 20)
