@@ -186,26 +186,59 @@ impl Scraper for NewScraper {
 cargo test
 ```
 
-## Docker Support
+## Quick Start with Docker
 
-A Dockerfile is included for containerized deployment:
+The easiest way to run the Competition Scraper API is using Docker. You can get up and running in seconds:
 
-```dockerfile
-FROM rust:1.70 as builder
-WORKDIR /app
-COPY . .
-RUN cargo build --release
+### Using Docker Compose (Recommended)
 
-FROM debian:bullseye-slim
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /app/target/release/comp /usr/local/bin/comp
-CMD ["comp"]
+```bash
+# Clone the repository
+git clone <repository-url>
+cd comp
+
+# Start the application with MongoDB
+docker-compose up -d
+
+# The API will be available at http://localhost:3000
 ```
 
-Build and run with Docker:
+### Using Docker
+
 ```bash
+# Pull the latest image from GitHub Container Registry
+docker pull ghcr.io/{your-username}/{repository-name}:main
+
+# Run the application with MongoDB
+docker run -d --name comp-mongo -p 27017:27017 mongo:6.0
+docker run -d --name comp-api --link comp-mongo -p 3000:3000 -e MONGODB_URI=mongodb://comp-mongo:27017/comp_db ghcr.io/{your-username}/{repository-name}:main
+
+# Or build and run locally
 docker build -t comp-api .
-docker run -p 3000:3000 -e MONGODB_URI=mongodb://your-mongo-host:27017 comp-api
+docker run -d --name comp-mongo -p 27017:27017 mongo:6.0
+docker run -d --name comp-api --link comp-mongo -p 3000:3000 -e MONGODB_URI=mongodb://comp-mongo:27017/comp_db comp-api
+```
+
+### Environment Variables
+
+When running with Docker, you can configure the application using these environment variables:
+
+- `MONGODB_URI`: MongoDB connection string (default: `mongodb://localhost:27017`)
+- `RUST_LOG`: Log level (default: `info`)
+
+### Docker Compose Configuration
+
+The provided `docker-compose.yml` file includes:
+- The Competition Scraper API service
+- A MongoDB service with persistent volume
+- Health checks for both services
+- Proper networking between services
+
+To customize the setup, you can override the environment variables:
+
+```bash
+# With custom environment variables
+MONGODB_URI=mongodb://custom-host:27017 RUST_LOG=debug docker-compose up -d
 ```
 
 ## Contributing
